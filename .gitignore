@@ -1,0 +1,8 @@
+*.o
+cinder
+core
+core.*
+*.tmp
+*.swp
+*~
+.vscode/
