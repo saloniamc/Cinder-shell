@@ -74,6 +74,8 @@ int main(void){
     size_t capacity = 0;
     ssize_t length;
 
+    int exit_status = 0;
+
     while(1){
         printf("cinder> ");
         fflush(stdout);
@@ -86,7 +88,19 @@ int main(void){
 
         line[strcspn(line, "\n")] = '\0';
 
-        if(strcmp(line, "exit") == 0){
+        if(strncmp(line, "exit", 4) == 0 && (line[4] == '\0'
+            || line[4] == ' ' || line[4] == '\t')){
+            
+                char* arg = line + 4;
+
+                while(*arg == ' ' || *arg == "\t"){
+                    arg++;
+                }
+
+                if(*arg != '\0'){
+                    exit_status = atoi(arg);
+                }
+
             break;
         }
 
@@ -112,5 +126,5 @@ int main(void){
     }
 
     free(line);
-    return (0);
+    return exit_status;
 }
