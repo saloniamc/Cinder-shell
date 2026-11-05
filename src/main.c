@@ -7,52 +7,105 @@
 #include<sys/wait.h>
 #include<unistd.h>
 
-void execute_command(char* line){
-    char* args[64];
-    int i = 0;
 
-    char* token = strtok(line, " \t");
-    while(token != NULL && i < 63){
-        args[i++] = token;
-        token = strtok(NULL, " \t");
+int parse_command(char *line, char *args[])
+{
+    int argc = 0;
+    char *p = line;
+
+    while(*p != '\0' && argc < 63)
+    {
+        while(*p == ' ' || *p == '\t')
+            p++;
+
+        if(*p == '\0')
+            break;
+
+        if(*p == '"')
+        {
+            p++;
+            args[argc++] = p;
+
+            while(*p != '\0' && *p != '"')
+                p++;
+
+            if(*p == '"')
+                *p = '\0', p++;
+        }
+        else
+        {
+            args[argc++] = p;
+
+            while(*p != '\0' && *p != ' ' && *p != '\t')
+                p++;
+
+            if(*p != '\0')
+                *p++ = '\0';
+        }
     }
 
-    args[i] = NULL;
+    args[argc] = NULL;
+    return argc;
+
+}
+
+
+void execute_command(char* line)
+{
+    char *args[64];
+    //int i = 0;
+
+    // char *token = strtok(line, " \t");
+    // while(token != NULL && i < 63)
+    // {
+    //     args[i++] = token;
+    //     token = strtok(NULL, " \t");
+    // }
+
+    // args[i] = NULL;
+
+    parse_command(line, args);
 
     if(args[0] == NULL)
         return;
 
     pid_t pid = fork();
 
-    if(pid == 0){
+    if(pid == 0)
+    {
         execvp(args[0], args);
         perror("cinder");
         exit(EXIT_FAILURE);
     }
-    else if(pid > 0){
+    else if(pid > 0)
+    {
         waitpid(pid, NULL, 0);
     }
-    else{
+    else
+    {
         perror("fork");
     }
 }
 
 int handle_builtin(char* line){
 
-    char* token = strtok(line, " \t");
+    char *token = strtok(line, " \t");
 
     if(token == NULL)
         return 1;
 
-    if(strcmp(token , "cd") == 0){
+    if(strcmp(token , "cd") == 0)
+    {
 
-        char* path = strtok(NULL, " \t");
+        char *path = strtok(NULL, " \t");
 
-        if(path == NULL || strcmp(path, "~") == 0){
+        if(path == NULL || strcmp(path, "~") == 0)
+        {
 
             path = getenv("HOME");
 
-            if(path == NULL){
+            if(path == NULL)
+            {
 
                 fprintf(stderr, "cinder: cd: missing path\n");
                 return 1;
@@ -69,19 +122,23 @@ int handle_builtin(char* line){
 }
 
 
-int main(void){
-    char* line = NULL;
+
+int main(void)
+{
+    char *line = NULL;
     size_t capacity = 0;
     ssize_t length;
 
     int exit_status = 0;
 
-    while(1){
+    while(1)
+    {
         printf("cinder> ");
         fflush(stdout);
 
         length = getline(&line, &capacity, stdin);
-        if(length == -1){
+        if(length == -1)
+        {
             printf("\n");
             break;
         }
@@ -89,26 +146,30 @@ int main(void){
         line[strcspn(line, "\n")] = '\0';
 
         if(strncmp(line, "exit", 4) == 0 && (line[4] == '\0'
-            || line[4] == ' ' || line[4] == '\t')){
+            || line[4] == ' ' || line[4] == '\t'))
+            {
             
-                char* arg = line + 4;
+                char *arg = line + 4;
 
-                while(*arg == ' ' || *arg == "\t"){
+                while(*arg == ' ' || *arg == '\t')
+                {
                     arg++;
                 }
 
-                if(*arg != '\0'){
+                if(*arg != '\0')
+                {
                     exit_status = atoi(arg);
                 }
 
             break;
         }
 
-        if(line[0] != '\0'){
+        if(line[0] != '\0')
+        {
             // printf("You entered: %s\n", line);
             // execute_command(line);
 
-            char* command = strdup(line);
+            char *command = strdup(line);
 
             if(command == NULL)
             {
@@ -119,7 +180,8 @@ int main(void){
             int handled = handle_builtin(command);
             free(command);
 
-            if(!handled){         // 1 : builtin  0: external
+            if(!handled)
+            {         // 1 : builtin  0: external
                     execute_command(line);
             }
         }
