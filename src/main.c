@@ -26,13 +26,17 @@ int parse_command(char *line, char *args[])
             char quote = *p;
             p++;
 
-            args[argc++] = p;
+            args[argc] = p;
 
             while(*p != '\0' && *p != quote)
                 p++;
 
-            if(*p == quote)
-                *p = '\0', p++;
+            if(*p == '\0')
+                return -1;
+
+            *p++ = '\0'; 
+            //p++;
+            argc++;
         }
         else
         {
@@ -66,7 +70,12 @@ void execute_command(char* line)
 
     // args[i] = NULL;
 
-    parse_command(line, args);
+    int argc = parse_command(line, args);
+
+    if(argc == -1){
+        fprintf(stderr, "cinder: unmatched quotes\n");
+        return;
+    }
 
     if(args[0] == NULL)
         return;
