@@ -12,6 +12,7 @@ int parse_command(char *line, char *args[])
 {
     int argc = 0;
     char *p = line;
+    char *write = line;
 
     while(*p != '\0' && argc < 63)
     {
@@ -21,33 +22,80 @@ int parse_command(char *line, char *args[])
         if(*p == '\0')
             break;
 
-        if(*p == '"' || *p == '\'')
+        args[argc] = write;
+
+        char quote = '\0';
+
+        while(*p != '\0')
         {
-            char quote = *p;
+            if(quote != '\0')
+            {
+                if(*p == quote)
+                {
+                    quote = '\0';
+                    p++;
+                }
+                else{
+                    *write++ = *p++;
+                }
+            }
+            else
+            {
+                if(*p == '"' || *p == '\'')
+                {
+                    quote = *p;
+                    p++;
+                }
+                else if(*p == ' ' || *p == '\t')
+                {
+                    break;
+                }
+                else
+                {
+                    *write++ = *p++;
+                }
+            }
+        }
+
+        if(quote != '\0'){
+            return -1;
+        }
+
+        if(*p != '\0'){
             p++;
-
-            args[argc] = p;
-
-            while(*p != '\0' && *p != quote)
-                p++;
-
-            if(*p == '\0')
-                return -1;
-
-            *p++ = '\0'; 
-            //p++;
-            argc++;
         }
-        else
-        {
-            args[argc++] = p;
 
-            while(*p != '\0' && *p != ' ' && *p != '\t')
-                p++;
+        *write++ = '\0';
+        argc++;
 
-            if(*p != '\0')
-                *p++ = '\0';
-        }
+
+        // if(*p == '"' || *p == '\'')
+        // {
+        //     char quote = *p;
+        //     p++;
+
+        //     args[argc] = p;
+
+        //     while(*p != '\0' && *p != quote)
+        //         p++;
+
+        //     if(*p == '\0')
+        //         return -1;
+
+        //     *p++ = '\0'; 
+        //     //p++;
+        //     argc++;
+        // }
+        // else
+        // {
+        //     args[argc++] = p;
+
+        //     while(*p != '\0' && *p != ' ' && *p != '\t')
+        //         p++;
+
+        //     if(*p != '\0')
+        //         *p++ = '\0';
+        // }
     }
 
     args[argc] = NULL;
