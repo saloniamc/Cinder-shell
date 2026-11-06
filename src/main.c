@@ -21,15 +21,17 @@ int parse_command(char *line, char *args[])
         if(*p == '\0')
             break;
 
-        if(*p == '"')
+        if(*p == '"' || *p == '\'')
         {
+            char quote = *p;
             p++;
+
             args[argc++] = p;
 
-            while(*p != '\0' && *p != '"')
+            while(*p != '\0' && *p != quote)
                 p++;
 
-            if(*p == '"')
+            if(*p == quote)
                 *p = '\0', p++;
         }
         else
